@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设定集</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            
+            /* 设置你的背景图片 */
+            background-image: url('bokaro.PNG');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 密码页面样式 */
+        .password-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            transition: all 0.5s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .password-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 50px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .lock-icon {
+            font-size: 60px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .password-title {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .password-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .password-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .password-input:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .password-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-top: 15px;
+            min-height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        /* 画廊页面样式 */
+        .gallery-container {
+            display: none; /* 初始隐藏 */
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 80px 20px 40px;
+            gap: 30px;
+            width: 100%;
+            min-height: 100vh;
+            animation: galleryFadeIn 0.8s ease;
+        }
+
+        @keyframes galleryFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .gallery-title {
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 画作样式 - 优化为5幅画布局 */
+        .painting {
+            width: calc(33.333% - 20px); /* 三列布局 */
+            min-width: 300px;
+            max-width: 500px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            aspect-ratio: 4/3; /* 统一比例 */
+        }
+
+        .painting::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255,255,255,0.05) 0%, 
+                rgba(255,255,255,0.02) 50%, 
+                rgba(255,255,255,0.05) 100%);
+            pointer-events: none;
+            border-radius: 10px;
+        }
+
+        .painting img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 保持图片比例并完整显示 */
+            display: block;
+            transition: transform 0.5s ease;
+            padding: 15px;
+        }
+
+        .painting:hover {
+            transform: scale(1.05) translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .painting:hover img {
+            transform: scale(1.03);
+        }
+
+        /* 退出按钮 */
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 101;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .painting {
+                width: calc(50% - 20px); /* 两列布局 */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .password-box {
+                padding: 30px 20px;
+                margin: 0 20px;
+            }
+            
+            .lock-icon {
+                font-size: 50px;
+            }
+            
+            .password-title {
+                font-size: 24px;
+            }
+            
+            .painting {
+                width: 90%; /* 单列布局 */
+                min-width: 250px;
+            }
+            
+            .gallery-container {
+                gap: 25px;
+                padding: 70px 15px 30px;
+            }
+            
+            .gallery-title {
+                font-size: 26px;
+                padding: 12px 0;
+            }
+            
+            .logout-btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+        }
+
+        /* 数字键盘样式 */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .keypad-btn {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .keypad-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .keypad-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 计数器显示 */
+        .counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- 密码验证页面 -->
+    <div class="password-container" id="passwordContainer">
+        <div class="password-box">
+            <div class="lock-icon">🔒</div>
+            <h1 class="password-title">设定集</h1>
+            <p class="password-subtitle">请输入访问密码以进入设定集</p>
+            
+            <div class="password-input-container">
+                <input type="password" 
+                       class="password-input" 
+                       id="passwordInput" 
+                       placeholder="请输入密码" 
+                       maxlength="4"
+                       autocomplete="off">
+            </div>
+            
+            <!-- 数字键盘（可选） -->
+            <div class="keypad">
+                <button class="keypad-btn" onclick="addNumber('1')">1</button>
+                <button class="keypad-btn" onclick="addNumber('2')">2</button>
+                <button class="keypad-btn" onclick="addNumber('3')">3</button>
+                <button class="keypad-btn" onclick="addNumber('4')">4</button>
+                <button class="keypad-btn" onclick="addNumber('5')">5</button>
+                <button class="keypad-btn" onclick="addNumber('6')">6</button>
+                <button class="keypad-btn" onclick="addNumber('7')">7</button>
+                <button class="keypad-btn" onclick="addNumber('8')">8</button>
+                <button class="keypad-btn" onclick="addNumber('9')">9</button>
+                <button class="keypad-btn" onclick="clearInput()">C</button>
+                <button class="keypad-btn" onclick="addNumber('0')">0</button>
+                <button class="keypad-btn" onclick="submitPassword()">↵</button>
+            </div>
+            
+            <button class="submit-btn" onclick="submitPassword()">
+                进入画廊
+            </button>
+            
+            <div class="loading" id="loading"></div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            <p class="hint">提示：密码为4位数字</p>
+        </div>
+    </div>
+
+    <!-- 画廊页面 -->
+    <div class="gallery-container" id="galleryContainer">
+        <button class="logout-btn" onclick="logout()">退出画廊</button>
+        
+        <!-- 第一幅画 -->
+        <div class="painting">
+            <img src="teweika.png" alt="画作一">
+        </div>
+        
+        <!-- 第二幅画 -->
+        <div class="painting">
+            <img src="teweien.png" alt="画作二">
+        </div>
+        
+        <!-- 第三幅画 -->
+        <div class="painting">
+            <img src="teweier.png" alt="画作三">
+        </div>
+        
+        <!-- 第四幅画 -->
+        <div class="painting">
+            <img src="panpan.png" alt="画作四">
+        </div>
+
+    <script>
+        // 正确的密码
+        const CORRECT_PASSWORD = "1889";
+        
+        // 获取DOM元素
+        const passwordContainer = document.getElementById('passwordContainer');
+        const galleryContainer = document.getElementById('galleryContainer');
+        const passwordInput = document.getElementById('passwordInput');
+        const errorMessage = document.getElementById('errorMessage');
+        const loading = document.getElementById('loading');
+        const counter = document.getElementById('counter');
+        
+        // 添加数字到输入框
+        function addNumber(num) {
+            if (passwordInput.value.length < 4) {
+                passwordInput.value += num;
+                hideError();
+            }
+        }
+        
+        // 清空输入
+        function clearInput() {
+            passwordInput.value = '';
+            hideError();
+        }
+        
+        // 隐藏错误信息
+        function hideError() {
+            errorMessage.style.opacity = '0';
+            errorMessage.textContent = '';
+        }
+        
+        // 显示错误信息
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.opacity = '1';
+        }
+        
+        // 提交密码验证
+        function submitPassword() {
+            const input = passwordInput.value;
+            
+            // 显示加载动画
+            loading.style.display = 'block';
+            hideError();
+            
+            // 模拟网络延迟
+            setTimeout(() => {
+                loading.style.display = 'none';
+                
+                if (input === CORRECT_PASSWORD) {
+                    // 密码正确，进入画廊
+                    passwordContainer.style.opacity = '0';
+                    setTimeout(() => {
+                        passwordContainer.style.display = 'none';
+                        galleryContainer.style.display = 'flex';
+                        
+                        // 更新计数器显示
+                        updateCounter();
+                        
+                        // 保存登录状态（可选）
+                        sessionStorage.setItem('galleryAuthenticated', 'true');
+                    }, 300);
+                } else {
+                    // 密码错误
+                    showError('密码错误，请重新输入');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    
+                    // 添加抖动效果
+                    passwordContainer.style.animation = 'none';
+                    setTimeout(() => {
+                        passwordContainer.style.animation = 'shake 0.5s ease';
+                    }, 10);
+                    
+                    // 移除抖动动画
+                    setTimeout(() => {
+                        passwordContainer.style.animation = '';
+                    }, 500);
+                }
+            }, 800); // 800ms延迟
+        }
+        
+        // 更新计数器
+        function updateCounter() {
+            const paintings = document.querySelectorAll('.painting');
+            counter.textContent = `${paintings.length}幅作品`;
+        }
+        
+        // 退出画廊
+        function logout() {
+            // 添加淡出效果
+            galleryContainer.style.opacity = '0';
+            
+            setTimeout(() => {
+                galleryContainer.style.display = 'none';
+                passwordContainer.style.display = 'flex';
+                
+                // 等待布局完成后开始淡入
+                setTimeout(() => {
+                    passwordContainer.style.opacity = '1';
+                    passwordInput.value = '';
+                    hideError();
+                    passwordInput.focus();
+                }, 50);
+            }, 300);
+            
+            // 清除登录状态
+            sessionStorage.removeItem('galleryAuthenticated');
+        }
+        
+        // 键盘事件监听
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitPassword();
+            }
+        });
+        
+        // 输入限制：只允许数字
+        passwordInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 4) {
+                this.value = this.value.slice(0, 4);
+            }
+            hideError();
+        });
+        
+        // 检查是否已登录（页面刷新时）
+        window.addEventListener('load', function() {
+            if (sessionStorage.getItem('galleryAuthenticated') === 'true') {
+                passwordContainer.style.display = 'none';
+                galleryContainer.style.display = 'flex';
+                updateCounter();
+            } else {
+                // 自动聚焦到密码输入框
+                setTimeout(() => {
+                    passwordInput.focus();
+                }, 500);
+            }
+        });
+        
+        // 添加抖动动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 图片预加载（可选）
+        window.addEventListener('load', function() {
+            const images = [
+                'teweika.png',
+                'teweien.png',
+                'teweier.png',
+                'panpan.png',
+                '666.png'
+            ];
+            
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        });
+    </script>
+</body>
+</html>
